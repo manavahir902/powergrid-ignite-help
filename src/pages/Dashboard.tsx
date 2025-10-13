@@ -5,16 +5,20 @@ import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Ticket, BookOpen, BarChart3, LogOut, Award } from "lucide-react";
+import { MessageSquare, Ticket, BookOpen, BarChart3, LogOut, Award, Database } from "lucide-react";
 import ChatInterface from "@/components/ChatInterface";
 import TicketList from "@/components/TicketList";
 import KnowledgeBase from "@/components/KnowledgeBase";
 import { toast } from "sonner";
+import { insertSampleData } from "@/utils/sampleData";
+import { Database as SupabaseDatabase } from "@/integrations/supabase/types";
+
+type Profile = SupabaseDatabase["public"]["Tables"]["profiles"]["Row"];
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -71,6 +75,16 @@ const Dashboard = () => {
     navigate("/auth");
   };
 
+  const handleInsertSampleData = async () => {
+    try {
+      await insertSampleData();
+      toast.success("Sample data inserted successfully!");
+    } catch (error) {
+      console.error("Error inserting sample data:", error);
+      toast.error("Failed to insert sample data");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -98,6 +112,13 @@ const Dashboard = () => {
               <Award className="w-4 h-4 text-accent" />
               <span className="font-semibold">{profile?.gamification_points || 0} pts</span>
             </div>
+            {/* Show sample data button for admins */}
+            {profile?.role === "it_admin" && (
+              <Button variant="outline" size="sm" onClick={handleInsertSampleData}>
+                <Database className="w-4 h-4 mr-2" />
+                Insert Sample Data
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout

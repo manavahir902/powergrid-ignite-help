@@ -8,11 +8,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2, Zap } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+interface SignupData {
+  employeeId: string;
+  fullName: string;
+  email: string;
+  department: string;
+  phone: string;
+  password: string;
+}
+
+interface LoginData {
+  email: string;
+  password: string;
+}
 
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [signupData, setSignupData] = useState({
+  const [signupData, setSignupData] = useState<SignupData>({
     employeeId: "",
     fullName: "",
     email: "",
@@ -20,7 +35,7 @@ const Auth = () => {
     phone: "",
     password: "",
   });
-  const [loginData, setLoginData] = useState({
+  const [loginData, setLoginData] = useState<LoginData>({
     email: "",
     password: "",
   });
@@ -47,23 +62,25 @@ const Auth = () => {
       if (authError) throw authError;
 
       if (authData.user) {
-        const { error: profileError } = await supabase.from("profiles").insert({
+        const { error: profileError } = await supabase.from("profiles").insert([{
           id: authData.user.id,
           employee_id: signupData.employeeId,
           full_name: signupData.fullName,
           email: signupData.email,
           department: signupData.department,
           phone: signupData.phone,
-          role: "employee",
-        });
+          role: "employee" as Database["public"]["Enums"]["user_role"],
+        }]);
 
         if (profileError) throw profileError;
 
         toast.success("Account created successfully! Logging you in...");
         navigate("/dashboard");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create account");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create account"
+      );
     } finally {
       setLoading(false);
     }
@@ -83,8 +100,10 @@ const Auth = () => {
 
       toast.success("Welcome back!");
       navigate("/dashboard");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to login");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to login"
+      );
     } finally {
       setLoading(false);
     }

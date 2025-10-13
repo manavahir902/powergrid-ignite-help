@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types";
 
 interface Ticket {
   id: string;
@@ -21,11 +22,19 @@ interface Ticket {
   created_at: string;
 }
 
+interface NewTicket {
+  title: string;
+  description: string;
+  category: Database["public"]["Enums"]["ticket_category"];
+  priority: Database["public"]["Enums"]["ticket_priority"];
+  location: string;
+}
+
 const TicketList = ({ userId }: { userId: string }) => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newTicket, setNewTicket] = useState({
+  const [newTicket, setNewTicket] = useState<NewTicket>({
     title: "",
     description: "",
     category: "other",
@@ -83,8 +92,8 @@ const TicketList = ({ userId }: { userId: string }) => {
         user_id: userId,
         title: newTicket.title,
         description: newTicket.description,
-        category: newTicket.category as any,
-        priority: newTicket.priority as any,
+        category: newTicket.category,
+        priority: newTicket.priority,
         location: newTicket.location,
       }]);
 
@@ -198,7 +207,7 @@ const TicketList = ({ userId }: { userId: string }) => {
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={newTicket.category}
-                    onValueChange={(value) => setNewTicket({ ...newTicket, category: value })}
+                    onValueChange={(value) => setNewTicket({ ...newTicket, category: value as Database["public"]["Enums"]["ticket_category"] })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -218,7 +227,7 @@ const TicketList = ({ userId }: { userId: string }) => {
                   <Label htmlFor="priority">Priority</Label>
                   <Select
                     value={newTicket.priority}
-                    onValueChange={(value) => setNewTicket({ ...newTicket, priority: value })}
+                    onValueChange={(value) => setNewTicket({ ...newTicket, priority: value as Database["public"]["Enums"]["ticket_priority"] })}
                   >
                     <SelectTrigger>
                       <SelectValue />
