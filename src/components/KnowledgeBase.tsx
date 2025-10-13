@@ -70,10 +70,18 @@ const KnowledgeBase = () => {
   };
 
   const incrementViewCount = async (articleId: string) => {
-    await supabase
+    const { data } = await supabase
       .from("knowledge_base")
-      .update({ view_count: supabase.raw("view_count + 1") })
-      .eq("id", articleId);
+      .select("view_count")
+      .eq("id", articleId)
+      .single();
+    
+    if (data) {
+      await supabase
+        .from("knowledge_base")
+        .update({ view_count: data.view_count + 1 })
+        .eq("id", articleId);
+    }
   };
 
   if (loading) {
