@@ -36,6 +36,12 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  useEffect(() => {
+    if (profile && user) {
+      checkRoleAndRedirect();
+    }
+  }, [profile, user]);
+
   const checkUser = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -66,6 +72,30 @@ const Dashboard = () => {
       setProfile(data);
     } catch (error) {
       console.error("Error loading profile:", error);
+    }
+  };
+
+  const checkRoleAndRedirect = async () => {
+    if (!user) return;
+
+    // Check user roles
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+
+    if (roles) {
+      // Admin gets redirected to admin dashboard
+      if (roles.some(r => r.role === "admin")) {
+        navigate("/admin-dashboard");
+        return;
+      }
+      // IT support gets redirected to IT dashboard
+      if (roles.some(r => r.role === "it_support")) {
+        navigate("/it-dashboard");
+        return;
+      }
+      // Employees stay on regular dashboard
     }
   };
 
